@@ -36,7 +36,7 @@ def do_create_directory(clientName)
 end
 
 def do_mysql(clientName)
-  client = Mysql2::Client.new(:host => "localhost", :username => "script", :password => "0pl,9okm")
+  client = Mysql2::Client.new(:host => "localhost", :username => "script", :password => "********")
   (1..2).each do |i|
     dbname = clientName + "#{ i }"
     #add a test if db exist
