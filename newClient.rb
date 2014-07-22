@@ -14,6 +14,14 @@ def directory_exists?(directory)
   File.directory?(directory)
 end
 
+
+def sudome(command)
+  if ENV["USER"] != "root"
+    exec("sudo #{ command }")
+  end
+end
+
+
 def do_create_directory(clientName)
   home    = ENV['HOME']
   dirpath = "#{ home }/#{ clientName }"
@@ -69,7 +77,27 @@ def do_wordpress(clientName)
       puts "Directory  #{ client } already exits"
     end
   end
+end
 
+
+def do_symlink(clientName)
+  home    = ENV['HOME']
+  dirpath = "#{ home }/#{ clientName }"
+  (1..2).each do |i|
+    client = "#{ clientName }" + "#{ i }"
+    wpdir = "#{ dirpath }/#{ client }"
+    command = "ln -s #{ wpdir } /usr/share/nginx/html/#{ client }"
+    owner = "chgrp -R www-data #{ dirpath }"
+    unless directory_exists?("/usr/share/nginx/html/#{ client }")
+      sudome(command)
+      sudome(owner)
+    puts "*********************************************************************************"
+    puts ""
+    puts "Now visit http://preview.logoworks.com/#{ client } to finish the instalation ASAP"
+    puts ""
+    puts "*********************************************************************************"
+    end
+  end
 end
 
 
@@ -87,3 +115,4 @@ print "Enter the CLIENT name of the skeleton: "
 do_create_directory(clientName)
 do_wordpress(clientName)
 do_mysql(clientName)
+do_symlink(clientName)
