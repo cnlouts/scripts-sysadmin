@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 # script by Chris Fernandez cfernandez@hispagatos.org
 # templates for vhosts on /etc/nginx/templates
-# -- TODO ---
-# configure wordpress
+# with time get rid of the system/sudo calls
 
 require 'securerandom'
 require 'fileutils'
@@ -17,7 +16,7 @@ end
 
 def sudome(command)
   if ENV["USER"] != "root"
-    exec("sudo #{ command }")
+    system("sudo #{ command }")
   end
 end
 
@@ -68,11 +67,6 @@ def do_wordpress(clientName)
       system("sed -i s/database_name_here/#{ client }/ #{ wpdir }/wp-config.php")
       system("sed -i s/username_here/#{ client }/ #{ wpdir }/wp-config.php")
       system("sed -i s/password_here/#{ @password}/ #{ wpdir }/wp-config.php")
-      #FileUtils.chown_R 'www-data', 'www-data', "#{ wpdir }"
-      #text = File.read("#{ wpdir }/wp-config.php")
-      #File.write("#{ wpdir }/wp-config.php", text.gsub(/database_name_here/, "#{ client }")
-      #File.write("#{ wpdir }/wp-config.php", text.gsub(/username_here/, "#{ client }")
-      #File.write("#{ wpdir }/wp-config.php", text.gsub(/password_here/, "#{ @password }")
     else
       puts "Directory  #{ client } already exits"
     end
@@ -87,21 +81,16 @@ def do_symlink(clientName)
     client = "#{ clientName }" + "#{ i }"
     wpdir = "#{ dirpath }/#{ client }"
     command = "ln -s #{ wpdir } /usr/share/nginx/html/#{ client }"
-    owner = "chgrp -R www-data #{ dirpath }"
-    unless directory_exists?("/usr/share/nginx/html/#{ client }")
-      sudome(command)
-      sudome(owner)
+    sudome(command)
     puts "*********************************************************************************"
     puts ""
     puts "Now visit http://preview.logoworks.com/#{ client } to finish the instalation ASAP"
     puts ""
     puts "*********************************************************************************"
-    end
   end
+  owner = "chgrp -R www-data #{ dirpath }"
+  sudome(owner)
 end
-
-
-
 
 
 #Here we going to clear the screen and pop menu.
