@@ -8,10 +8,10 @@ require 'mail'
 def do_create_user(first,last,pw,email)
   pwd = pw.crypt("$5$a1")
   uname = first.to_s + "-" + last.to_s
-  result = system("/usr/sbin/useradd -G developers,www-data  -b /home/developers -m -p '#{ pwd }' #{ uname }")
+  result = system("/usr/sbin/useradd -G developers -b /home/developers -m -p '#{ pwd }' #{ uname }")
     if result
       puts "#{ uname } created!"
-      system("/bin/chmod 0750 /home/developers/#{ uname }")
+      system("/bin/chmod 0755 /home/developers/#{ uname }")
       do_mail_dev(uname,pw,email)
     else
       puts "#{ uname } failed!"
