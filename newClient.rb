@@ -7,7 +7,8 @@ require 'securerandom'
 require 'fileutils'
 require 'mysql2'
 
-@password = SecureRandom.urlsafe_base64
+@password  = SecureRandom.urlsafe_base64
+@password2 = SecureRandom.urlsafe_base64
 
 def directory_exists?(directory)
   File.directory?(directory)
@@ -36,17 +37,18 @@ def do_create_directory(clientName)
 end
 
 def do_mysql(clientName)
-  client = Mysql2::Client.new(:host => "localhost", :username => "script", :password => "********")
+  client = Mysql2::Client.new(:host => "localhost", :username => "script", :password => "xxxxxx")
   (1..2).each do |i|
     dbname = clientName + "#{ i }"
     #add a test if db exist
+      #sql = "SET PASSWORD FOR #{ dbname }@localhost= PASSWORD("#{ @password }");"
       client.query("CREATE DATABASE #{ dbname }")
       client.query("CREATE USER #{ dbname }@localhost;")
       client.query("SET PASSWORD FOR #{ dbname }@localhost= PASSWORD('#{ @password }');")
-      client.query("GRANT SELECT,INSERT,UPDATE,DELETE ON #{ dbname }.* TO #{ dbname }@localhost")
+      client.query("GRANT SELECT,CREATE,INSERT,UPDATE,DELETE ON #{ dbname }.* TO #{ dbname }@localhost")
       client.query("FLUSH PRIVILEGES;")
-    end
-    client.close
+  
+  end
 end
 
 def do_wordpress(clientName)
@@ -66,6 +68,7 @@ def do_wordpress(clientName)
       system("sed -i s/database_name_here/#{ client }/ #{ wpdir }/wp-config.php")
       system("sed -i s/username_here/#{ client }/ #{ wpdir }/wp-config.php")
       system("sed -i s/password_here/#{ @password}/ #{ wpdir }/wp-config.php")
+      system("sed -i s/put your unique phrase here/#{ @password2 }/g #{ wpdir }/wp-config.php""
     else
       puts "Directory  #{ client } already exits"
     end
