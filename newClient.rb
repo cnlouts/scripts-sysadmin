@@ -68,7 +68,7 @@ def do_wordpress(clientName)
       system("sed -i s/database_name_here/#{ client }/ #{ wpdir }/wp-config.php")
       system("sed -i s/username_here/#{ client }/ #{ wpdir }/wp-config.php")
       system("sed -i s/password_here/#{ @password}/ #{ wpdir }/wp-config.php")
-      system("sed -i s/put your unique phrase here/#{ @password2 }/g #{ wpdir }/wp-config.php""
+      system("sed -i s/put your unique phrase here/#{ @password2 }/g #{ wpdir }/wp-config.php")
     else
       puts "Directory  #{ client } already exits"
     end
