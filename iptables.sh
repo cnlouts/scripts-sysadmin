@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 SERVER_IP="xx.xx.xx.xx"
@@ -26,12 +25,12 @@ iptables -A INPUT -p tcp -s 0/0 --sport 1024:65535 -d $SERVER_IP --dport 80 -m s
 iptables -A OUTPUT -p tcp -s $SERVER_IP --sport 80 -d 0/0 --dport 1024:65535 -m state --state ESTABLISHED -j ACCEPT
 
 # allow www out
-iptables -A OUTPUT -p tcp -s $SERVER_IP --sport 1024:65535 -d 0/0 --dport 80 -m state --state ESTABLISHED -j ACCEPT
+iptables -A INPUT  -p tcp -s 0/0 --sport 80 -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A OUTPUT -p tcp -d 0/0 --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+# allow 443 out
 
-# allow 443 
-
-iptables -A INPUT -p tcp -s 0/0 --sport 1024:65535 -d $SERVER_IP --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -p tcp -s $SERVER_IP --sport 443 -d 0/0 --dport 1024:65535 -m state --state ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -o eth0 -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
 
 #allow DNS 
 
