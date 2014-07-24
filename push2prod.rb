@@ -12,7 +12,7 @@ require 'mysql2'
 
 @password  = SecureRandom.urlsafe_base64
 @password2 = SecureRandom.urlsafe_base64
-@host = "162.243.120.75"
+@host = "162.xx.xx.xx"
 @user = "root"
 
 
