@@ -12,7 +12,7 @@ require 'mysql2'
 
 @password  = SecureRandom.urlsafe_base64
 @password2 = SecureRandom.urlsafe_base64
-@host = "162.xx.xx.xx"
+@host = "162.x.x.x"
 @user = "root"
 
 
@@ -44,7 +44,7 @@ end
 def do_mysqlSetup(ssh, newClientSite)
   dbname = newClientSite.chop
   user = newClientSite.chop
-  client = Mysql2::Client.new(:host => "162.xx.xx.xx", :username => "script", :password => "*******")
+  client = Mysql2::Client.new(:host => "xx.x.x.x", :username => "script", :password => "x*x*X*x")
       client.query("CREATE DATABASE #{ dbname }")
       client.query("CREATE USER #{ user }@localhost;")
       client.query("SET PASSWORD FOR #{ user }@localhost= PASSWORD('#{ @password2 }');")
@@ -66,7 +66,7 @@ def do_wpSetup(ssh, newClientSite)
   ssh.exec!("sed -i s/#{ newClientSite }/#{ client }/g #{ wpdir }/wp-config.php")
   ssh.exec!(cmd)
   ssh.exec!("chgrp -R #{ client }:www-data #{ wp_path }")
-
+  ssh.exec!("chmod -R 775 #{ wp_path }/wp-content/uploads")
 end
 
 
