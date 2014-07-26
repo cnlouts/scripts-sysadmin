@@ -108,7 +108,7 @@ puts ""
 print "Enter Email address: "
   email = gets.chomp.downcase
 
-devName  = Mysql2::Client.new(:host => "162.243.120.75", :username => "script", :password => "0pl,9okm")
+  devName  = Mysql2::Client.new(:host => "xx.xxx.xx.xx", :username => "script", :password => "*****")
   devName.query("use developers;")
   result = devName.query("select name from users where client=\"#{ clientName }\"")
   devName.close
