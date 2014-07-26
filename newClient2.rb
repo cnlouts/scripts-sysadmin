@@ -22,37 +22,40 @@ def sudome(command)
 end
 
 
-def do_create_directory(clientName)
-  home    = ENV['HOME']
+def do_create_directory(devName, clientName)
+  home    = "/home/developers/#{ devName }"
   dirpath = "#{ home }/#{ clientName }"
   puts dirpath
 
   unless directory_exists?(dirpath)
     puts "Creating directory for #{ clientName }"
     Dir.mkdir("#{ dirpath }")
+    FileUtils.chown_R "#{ devName }", "www-data", "#{ dirpath }"    
   else
-    puts "Directory  #{ clientName } already exits" 
+    puts "Directory  #{ clientName } already exits"
+    abort("Directory  #{ clientName } already exits") 
   end
   
 end
 
-def do_mysql(clientName)
+def do_mysql(devName, clientName)
   client = Mysql2::Client.new(:host => "localhost", :username => "script", :password => "xxxxxxx")
+  cmd = "INSERT INTO users (name, client) VALUES (\"#{ devName }\", \"#{ clientName }\");"
+  client.query("use developers;")
+  client.query(cmd)
   (1..2).each do |i|
     dbname = clientName + "#{ i }"
     #add a test if db exist
-      #sql = "SET PASSWORD FOR #{ dbname }@localhost= PASSWORD("#{ @password }");"
       client.query("CREATE DATABASE #{ dbname }")
       client.query("CREATE USER #{ dbname }@localhost;")
       client.query("SET PASSWORD FOR #{ dbname }@localhost= PASSWORD('#{ @password }');")
       client.query("GRANT SELECT,CREATE,INSERT,UPDATE,DELETE ON #{ dbname }.* TO #{ dbname }@localhost")
       client.query("FLUSH PRIVILEGES;")
-  
   end
 end
 
-def do_wordpress(clientName)
-  home    = ENV['HOME']
+def do_wordpress(devName, clientName)
+  home    = "/home/developers/#{ devName }"
   dirpath = "#{ home }/#{ clientName }"
   system("wget http://wordpress.org/latest.tar.gz -O /tmp/latest.tar.gz")
 
@@ -65,33 +68,33 @@ def do_wordpress(clientName)
       system("tar zxvf /tmp/latest.tar.gz -C #{ dirpath }/")
       FileUtils.mv "#{ dirpath }/wordpress", "#{ wpdir }"
       FileUtils.cp "#{ wpdir }/wp-config-sample.php", "#{ wpdir }/wp-config.php"
+      FileUtils.chmod_R 0775, "#{ wpdir }/wp-content"
       system("sed -i s/database_name_here/#{ client }/ #{ wpdir }/wp-config.php")
       system("sed -i s/username_here/#{ client }/ #{ wpdir }/wp-config.php")
       system("sed -i s/password_here/#{ @password}/ #{ wpdir }/wp-config.php")
-      system("sed -i s/put your unique phrase here/#{ @password2 }/g #{ wpdir }/wp-config.php""
+      system("sed -i 's/put your unique phrase here/#{ @password2 }/g' #{ wpdir }/wp-config.php")
     else
       puts "Directory  #{ client } already exits"
     end
   end
+  FileUtils.chown_R "#{ devName }", "www-data", "#{ dirpath }"
 end
 
 
-def do_symlink(clientName)
-  home    = ENV['HOME']
+def do_symlink(devName, clientName)
+  home    = "/home/developers/#{ devName }"
   dirpath = "#{ home }/#{ clientName }"
   (1..2).each do |i|
     client = "#{ clientName }" + "#{ i }"
     wpdir = "#{ dirpath }/#{ client }"
-    command = "ln -s #{ wpdir } /usr/share/nginx/html/#{ client }"
-    sudome(command)
+    system("ln -s #{ wpdir } /usr/share/nginx/html/#{ client }")
     puts "*********************************************************************************"
     puts ""
     puts "Now visit http://preview.logoworks.com/#{ client } to finish the instalation ASAP"
     puts ""
     puts "*********************************************************************************"
   end
-  owner = "chgrp -R www-data #{ dirpath }"
-  sudome(owner)
+  FileUtils.chown_R "#{ devName }", "www-data", "#{ dirpath }"
 end
 
 
@@ -99,11 +102,21 @@ end
 system 'clear'
 print "Welcome to the new Client install script.. for support cfernandez@hispagatos.org\n"
 print "====================================================================================\n"
+print "Enter the Developer name format(firstname-lastname): "
+  devName = gets.chomp.downcase
+puts ""
 print "**Now we going to create the skeleton for development**\n"
 print "Enter the CLIENT name of the skeleton: "
   clientName = gets.chomp.downcase
 
-do_create_directory(clientName)
-do_wordpress(clientName)
-do_mysql(clientName)
-do_symlink(clientName)
+# check if client exist already and exit
+if directory_exists?("/home/developers/#{ devName }/#{ clientName }")
+  puts "Sorry, #{ clientName } is already in use.  Please choose a different name"
+  abort "Sorry, #{ clientName } is already in use.  Please choose a different name"
+end
+
+
+do_create_directory(devName, clientName)
+do_wordpress(devName, clientName)
+do_mysql(devName, clientName)
+do_symlink(devName, clientName)

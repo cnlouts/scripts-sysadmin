@@ -44,7 +44,7 @@ end
 def do_mysqlSetup(ssh, newClientSite)
   dbname = newClientSite.chop
   user = newClientSite.chop
-  client = Mysql2::Client.new(:host => "xx.xx.xx.xx", :username => "script", :password => "******")
+  client = Mysql2::Client.new(:host => "xxx.xxx.xxx.xxx", :username => "script", :password => "xxxx")
       client.query("CREATE DATABASE #{ dbname }")
       client.query("CREATE USER #{ user }@localhost;")
       client.query("SET PASSWORD FOR #{ user }@localhost= PASSWORD('#{ @password2 }');")
@@ -66,7 +66,7 @@ def do_wpSetup(ssh, newClientSite)
   ssh.exec!("sed -i s/#{ newClientSite }/#{ client }/g #{ wpdir }/wp-config.php")
   ssh.exec!(cmd)
   ssh.exec!("chgrp -R #{ client }:www-data #{ wp_path }")
-  ssh.exec!("chmod -R 775 #{ wp_path }/wp-content/uploads")
+  ssh.exec!("chmod -R 775 #{ wp_path }/wp-content")
 end
 
 
@@ -107,9 +107,15 @@ print "Enter DNS name, EXAMPLE (myname.com): "
 puts ""
 print "Enter Email address: "
   email = gets.chomp.downcase
-puts ""
-print "Enter 'Developer' username(firstname-lastname): "
-  developer = gets.chomp.downcase
+
+devName  = Mysql2::Client.new(:host => "162.243.120.75", :username => "script", :password => "0pl,9okm")
+  devName.query("use developers;")
+  result = devName.query("select name from users where client=\"#{ clientName }\"")
+  devName.close
+result.each do |i|
+    developer = i['name']
+end
+
 
 Net::SCP.start("#{ @host }", "#{ @user }") do |scp|
   do_copyMysqlDump(scp, newClientSite, newDNSname)
