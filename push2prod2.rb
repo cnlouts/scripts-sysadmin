@@ -44,7 +44,7 @@ end
 def do_mysqlSetup(ssh, newClientSite)
   dbname = newClientSite.chop
   user = newClientSite.chop
-  client = Mysql2::Client.new(:host => "xxx.xxx.xxx.xxx", :username => "script", :password => "xxxx")
+  client = Mysql2::Client.new(:host => "xx.xx.xx.xx", :username => "script", :password => "**********")
       client.query("CREATE DATABASE #{ dbname }")
       client.query("CREATE USER #{ user }@localhost;")
       client.query("SET PASSWORD FOR #{ user }@localhost= PASSWORD('#{ @password2 }');")
@@ -108,18 +108,18 @@ puts ""
 print "Enter Email address: "
   email = gets.chomp.downcase
 
-  devName  = Mysql2::Client.new(:host => "xx.xxx.xx.xx", :username => "script", :password => "*****")
+devName  = Mysql2::Client.new(:host => "127.0.0.1", :username => "script", :password => "*************")
   devName.query("use developers;")
   result = devName.query("select name from users where client=\"#{ clientName }\"")
   devName.close
 result.each do |i|
-    developer = i['name']
+    @developer = i['name']
 end
 
 
 Net::SCP.start("#{ @host }", "#{ @user }") do |scp|
   do_copyMysqlDump(scp, newClientSite, newDNSname)
-  do_copySite(scp, newClientSite, developer)
+  do_copySite(scp, newClientSite, @developer)
 end
 
 Net::SSH.start("#{ @host }", "#{ @user }") do |ssh|  
