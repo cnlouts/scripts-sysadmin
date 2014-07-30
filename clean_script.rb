@@ -7,7 +7,7 @@ require 'pathname'
 
 @password = "password goes here"
 @ip = "ip goes here"
-@directory = "logoworks.com"
+@directory = "domainhere.com"
 
 Dir.glob("#{ @directory }/*.rb").each do |rubyFile|
   singleRubyFile = Pathname.new(rubyFile).relative_path_from( Pathname.new("#{ @directory }") ).to_s
