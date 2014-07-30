@@ -44,7 +44,7 @@ end
 def do_mysqlSetup(ssh, newClientSite)
   dbname = newClientSite.chop
   user = newClientSite.chop
-  client = Mysql2::Client.new(:host => "xx.xx.xx.xx", :username => "script", :password => "******")
+  client = Mysql2::Client.new(:host => "xx.xx.xx.xx", :username => "script", :password => "********")
       client.query("CREATE DATABASE #{ dbname }")
       client.query("CREATE USER #{ user }@localhost;")
       client.query("SET PASSWORD FOR #{ user }@localhost= PASSWORD('#{ @password2 }');")

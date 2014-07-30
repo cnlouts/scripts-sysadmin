@@ -15,11 +15,11 @@ def directory_exists?(directory)
 end
 
 
-def sudome(command)
-  if ENV["USER"] != "root"
-    system("sudo #{ command }")
-  end
-end
+#def sudome(command)
+#  if ENV["USER"] != "root"
+#    system("sudo #{ command }")
+#  end
+#end
 
 
 def do_create_directory(devName, clientName)
@@ -30,7 +30,7 @@ def do_create_directory(devName, clientName)
   unless directory_exists?(dirpath)
     puts "Creating directory for #{ clientName }"
     Dir.mkdir("#{ dirpath }")
-    FileUtils.chown_R "#{ devName }", "www-data", "#{ dirpath }"    
+    system("sudo /bin/chown -R #{ devName }:www-data #{ dirpath }")
   else
     puts "Directory  #{ clientName } already exits"
     abort("Directory  #{ clientName } already exits") 
@@ -39,7 +39,7 @@ def do_create_directory(devName, clientName)
 end
 
 def do_mysql(devName, clientName)
-  client = Mysql2::Client.new(:host => "localhost", :username => "script", :password => "xxxxxxx")
+  client = Mysql2::Client.new(:host => "localhost", :username => "script", :password => "********")
   cmd = "INSERT INTO users (name, client) VALUES (\"#{ devName }\", \"#{ clientName }\");"
   client.query("use developers;")
   client.query(cmd)
@@ -68,16 +68,18 @@ def do_wordpress(devName, clientName)
       system("tar zxvf /tmp/latest.tar.gz -C #{ dirpath }/")
       FileUtils.mv "#{ dirpath }/wordpress", "#{ wpdir }"
       FileUtils.cp "#{ wpdir }/wp-config-sample.php", "#{ wpdir }/wp-config.php"
-      FileUtils.chmod_R 0775, "#{ wpdir }/wp-content"
       system("sed -i s/database_name_here/#{ client }/ #{ wpdir }/wp-config.php")
       system("sed -i s/username_here/#{ client }/ #{ wpdir }/wp-config.php")
       system("sed -i s/password_here/#{ @password}/ #{ wpdir }/wp-config.php")
       system("sed -i 's/put your unique phrase here/#{ @password2 }/g' #{ wpdir }/wp-config.php")
+      cmd="echo \"define(\'FS_METHOD\', \'direct\');\" >> #{ wpdir }/wp-config.php"
+      system(cmd)
+      FileUtils.chmod_R 0775, "#{ wpdir }/wp-content"
     else
       puts "Directory  #{ client } already exits"
     end
   end
-  FileUtils.chown_R "#{ devName }", "www-data", "#{ dirpath }"
+  system("sudo /bin/chown -R #{ devName }:www-data #{ dirpath }")  
 end
 
 
@@ -87,14 +89,16 @@ def do_symlink(devName, clientName)
   (1..2).each do |i|
     client = "#{ clientName }" + "#{ i }"
     wpdir = "#{ dirpath }/#{ client }"
-    system("ln -s #{ wpdir } /usr/share/nginx/html/#{ client }")
+    system("sudo /bin/ln -s #{ wpdir } /usr/share/nginx/html/#{ client }")
+    system("service nginx reload")
+
     puts "*********************************************************************************"
     puts ""
     puts "Now visit http://preview.logoworks.com/#{ client } to finish the instalation ASAP"
     puts ""
     puts "*********************************************************************************"
   end
-  FileUtils.chown_R "#{ devName }", "www-data", "#{ dirpath }"
+  system("sudo /bin/chown -R #{ devName }:www-data #{ dirpath }")
 end
 
 
